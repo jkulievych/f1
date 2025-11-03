@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Race Not Started</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
+        h1 { color: #e10600; }
+
+        .message-box {
+            width: 80%;
+            margin: 30px auto;
+            padding: 40px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .message-box p {
+            font-size: 1.3em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ session_name }}</h1>
+
+    <div class="message-box">
+        <p>This event has not happened yet.</p>
+        <p>Data will be available after <strong>{{ event_date.strftime('%d %B %Y') }}</strong>.</p>
+    </div>
+
+    <br>
+    <a href="{{ url_for('show_season_schedule', year=event_date.year) }}">Back to Season Schedule</a>
+</body>
+</html>
