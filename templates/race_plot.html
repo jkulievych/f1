@@ -1,37 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Race Details</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #e10600; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 5px; }
+{% extends "base.html" %}
 
+{# Встановлюємо заголовок вкладки браузера #}
+{% block title %}Plot - F1 Dashboard{% endblock %}
+
+{# Додаємо CSS, специфічний для цієї сторінки (графік) #}
+{% block head %}
+    <style>
         .plot-container {
-            width: 80%;
+            width: 100%;
             margin: 20px auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
         }
         .plot-container img {
-            width: 100%;
+            max-width: 100%; /* Графік не буде ширшим за контейнер */
             height: auto;
-            display: block;
+            display: inline-block;
+            border: 1px solid var(--f1-border);
+            border-radius: 8px;
+        }
+        
+        /* Якщо це темний графік (наприклад, Pace), додаємо тло */
+        .plot-container.dark-plot img {
+            background-color: #333;
+        }
+        
+        /* Стиль для навігації "Назад" */
+        .nav-links {
+            margin-top: 30px;
+            text-align: center;
         }
     </style>
-</head>
-<body>
-    <h1>{{ session_name }}</h1>
+{% endblock %}
 
-    <h2>Fastest Lap Speed Comparison ({{ driver_1 }} vs {{ driver_2 }})</h2>
+{# Основний контент сторінки #}
+{% block content %}
+    <h2>{{ session_name }}</h2>
+    
+    {% if driver_2 %}
+        <h3>Fastest Lap Speed Comparison ({{ driver_1 }} vs {{ driver_2 }})</h3>
+    {% else %}
+        <h3>{{ driver_1 }}</h3>
+    {% endif %}
 
-    <div class="plot-container">
+    <div class="plot-container {% if 'Pace' in session_name %}dark-plot{% endif %}">
         <img src="{{ url_for('static', filename=plot_filename) }}?v={{ cache_buster }}"
-             alt="Telemetry Plot">
+             alt="Generated Plot">
     </div>
 
-    <br>
-    <a href="/">Back to Home</a>
-
-</body>
-</html>
+    <div class="nav-links">
+        <a href="javascript:window.close();" class="button-red" style="padding: 10px 20px; font-size: 0.9rem;">
+            Close Tab
+        </a>
+    </div>
+{% endblock %}

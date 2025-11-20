@@ -1,50 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Select a Season</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #e10600; }
+{% extends "base.html" %}
 
-        .season-list {
-            width: 80%;
-            margin: 20px auto;
+{# Встановлюємо заголовок вкладки браузера #}
+{% block title %}Select Season - F1 Dashboard{% endblock %}
+
+{# Додаємо CSS, специфічний для цієї сторінки (сітка карток) #}
+{% block head %}
+    <style>
+        .seasons-grid {
+            display: grid;
+            /* Створює стільки колонок, скільки вміститься, 
+              кожна мін. 150px шириною
+            */
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
         }
-        .season-list a {
-            display: block;
-            background-color: #fff;
-            padding: 20px;
-            margin-bottom: 10px;
-            text-decoration: none;
-            color: #333;
-            font-size: 1.3em;
-            font-weight: 500;
-            border: 1px solid #ddd;
+        
+        /* Стиль для кожної картки-посилання */
+        .season-card {
+            background-color: var(--f1-card-bg); /* Темний фон картки */
+            border: 1px solid var(--f1-border);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 25px; /* Зробив їх трохи вищими */
+            text-align: center;
+            font-family: 'Formula1', sans-serif; /* Наш шрифт */
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--f1-text);
+            text-decoration: none; /* Прибираємо підкреслення */
             transition: all 0.2s ease;
+            display: block;
         }
-        .season-list a:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-            color: #e10600;
+        
+        .season-card:hover {
+            background-color: var(--f1-red); /* Стає червоним при наведенні */
+            border-color: var(--f1-red);
+            color: white;
+            transform: translateY(-3px); /* "Піднімається" */
         }
     </style>
-</head>
-<body>
-    <h1>Select a Season</h1>
+{% endblock %}
 
-    <div class="season-list">
+{# Основний контент сторінки #}
+{% block content %}
+    <h2>Select a Season</h2>
+
+    <div class="seasons-grid">
         {% for year in years %}
-            <a href="{{ url_for('show_season_schedule', year=year) }}">
-                {{ year }} Season
+            <a href="{{ url_for('show_season_schedule', year=year) }}" class="season-card">
+                {{ year }}
             </a>
         {% endfor %}
     </div>
 
-    <br>
-    <a href="/">Back to Home</a>
-
-</body>
-</html>
+    <div style="margin-top: 40px; text-align: center;">
+        <a href="{{ url_for('home') }}">&larr; Back to Home</a>
+    </div>
+{% endblock %}

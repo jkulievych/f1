@@ -1,82 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>F1 Data Dashboard</title>
+{% extends "base.html" %}
+
+{# Це встановить заголовок вкладки браузера #}
+{% block title %}Home - F1 Dashboard{% endblock %}
+
+
+{# 
+  Цей блок додає стилі, СПЕЦИФІЧНІ для цієї сторінки 
+#}
+{% block head %}
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #e10600; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        table { border-collapse: collapse; width: 100%; margin: 0 auto; box-shadow: none; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: 600; }
-        tr:hover { background-color: #f1f1f1; }
-
-        table a {
-            text-decoration: none;
-            color: #007bff;
-            font-weight: 500;
-        }
-        table a:hover {
-            text-decoration: underline;
-        }
-
-        /* Контейнер для наших карток */
         .dashboard-container {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Дві колонки однакової ширини */
-            gap: 20px; /* Відстань між колонками */
-            width: 90%;
-            margin: 20px auto;
+            /* 1 колонка на мобільних */
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
         }
 
-        /* Стиль для кожної картки (Подіум, Топ-5...) */
+        /* 2 колонки на екранах ширше 900px */
+        @media (min-width: 900px) {
+            .dashboard-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         .card {
-            background-color: #fff;
-            border: 1px solid #ddd;
+            background-color: var(--f1-card-bg); /* Використовуємо колір з base.html */
+            border: 1px solid var(--f1-border);
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        /* Картка для "Browse Seasons" - робимо її кнопкою */
+        /*
+          --- ОСЬ ТУТ ЗМІНИ ---
+        */
+        .card h2 {
+            /* 1. Робимо заголовок червоним */
+            color: var(--f1-red);
+
+            /* 2. Прибираємо лінію */
+            border-bottom: none;
+
+            /* 3. Прибираємо зайві відступи, які були у лінії */
+            padding-bottom: 0;
+            margin-top: 0; /* (для кращого вигляду) */
+        }
+        /* --- Кінець змін --- */
+
         .card-full-width {
-            grid-column: 1 / -1; /* Займає всю ширину */
+            grid-column: 1 / -1; /* Завжди займає всю ширину */
             text-align: center;
-        }
-        .card-full-width a {
-            display: block;
-            background-color: #e10600;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 1.3em;
-            font-weight: 600;
-            transition: background-color 0.2s;
-        }
-        .card-full-width a:hover {
-            background-color: #b00500;
+
+            /* Прибираємо фон та рамку картки ЛИШЕ для кнопки */
+            background-color: transparent;
+            border: none;
+            padding: 0;
         }
 
-        /* Посилання "View All" */
         .view-all-link {
             display: block;
             text-align: right;
             margin-top: 15px;
-            font-weight: 600;
-            color: #007bff;
-            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--f1-red); /* Використовуємо колір з base.html */
         }
-        .view-all-link:hover {
-            text-decoration: underline;
-        }
-
     </style>
-</head>
-<body>
-    <h1>F1 Data Dashboard</h1>
+{% endblock %}
 
+
+{# Це основний контент, який вставляється в 'base.html' #}
+{% block content %}
     <div class="dashboard-container">
 
         <div class="card">
@@ -95,14 +89,10 @@
                     <tr>
                         <td>{{ driver.position }}</td>
                         <td>
-                            <a href="{{ url_for('show_driver_profile', driver_id=driver.driverId) }}">
-                                {{ driver.givenName }} {{ driver.familyName }}
-                            </a>
+                            <span>{{ driver.givenName }} {{ driver.familyName }}</span>
                         </td>
                         <td>
-                            <a href="{{ url_for('show_team_profile', constructor_id=driver.constructorIds[0]) }}">
-                                {{ driver.constructorNames[0] }}
-                            </a>
+                            <span>{{ driver.constructorNames[0] }}</span>
                         </td>
                         <td>{{ driver.points }}</td>
                     </tr>
@@ -127,24 +117,21 @@
                     <tr>
                         <td>{{ team.position }}</td>
                         <td>
-                            <a href="{{ url_for('show_team_profile', constructor_id=team.constructorId) }}">
-                                {{ team.constructorName }}
-                            </a>
+                            <span>{{ team.constructorName }}</span>
                         </td>
                         <td>{{ team.points }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <a href="{{ url_for('show_standings', year=current_year) }}#ConstructorStandings" class="view-all-link">View All &rarr;</a>
+            <a href="{{ url_for('show_standings', year=current_year) }}" class="view-all-link">View All &rarr;</a>
         </div>
 
         <div class="card card-full-width">
-            <a href="{{ url_for('show_seasons_list') }}">
+            <a href="{{ url_for('show_seasons_list') }}" class="button-red">
                 Browse All Seasons
             </a>
         </div>
 
     </div>
-</body>
-</html>
+{% endblock %}

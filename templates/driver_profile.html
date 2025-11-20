@@ -4,8 +4,22 @@
     <meta charset="UTF-8">
     <title>Driver Profile</title>
     <style>
+        /*
+          --- НОВИЙ КОД: Встановлюємо змінну кольору ---
+        */
+        :root {
+            --team-color: {{ team_color | safe }}; /* Flask вставить сюди колір, напр. #DC0000 */
+        }
+        /* --- Кінець нового коду --- */
+
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #e10600; }
+
+        /* --- ОНОВЛЕНО: Заголовок h1 тепер кольоровий ---
+        */
+        h1 {
+            color: var(--team-color);
+        }
+
         h2 { border-bottom: 2px solid #eee; padding-bottom: 5px; }
         table { border-collapse: collapse; width: 80%; margin: 20px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
@@ -13,10 +27,12 @@
         tr:nth-child(even) { background-color: #fdfdfd; }
         tr:hover { background-color: #f1f1f1; }
 
-        /* New style for the info card */
+        /* --- ОНОВЛЕНО: Інфо-картка тепер має кольорову рамку ---
+        */
         .info-card {
             background-color: #fff;
             border: 1px solid #ddd;
+            border-top: 5px solid var(--team-color); /* <--- ОСЬ ТУТ ЗМІНА */
             border-radius: 8px;
             padding: 16px;
             margin-bottom: 20px;
@@ -31,6 +47,15 @@
         }
         .info-card p strong {
             color: #333;
+        }
+
+        table a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: 500;
+        }
+        table a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -49,7 +74,7 @@
     {{ results_table | safe }}
 
     <br>
-    <a href="/standings">Back to Standings</a>
+    <a href="{{ url_for('show_standings', year=year) }}">Back to {{ year }} Standings</a>
 
 </body>
 </html>

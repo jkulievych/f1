@@ -1,90 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Championship Standings</title>
+{% extends "base.html" %}
+
+{# Встановлюємо заголовок вкладки браузера #}
+{% block title %}Standings - F1 Dashboard{% endblock %}
+
+{# Додаємо CSS, специфічний для цієї сторінки (вкладки) #}
+{% block head %}
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #e10600; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        table { border-collapse: collapse; width: 100%; margin: 0 auto; box-shadow: none; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: 600; }
-        tr:nth-child(even) { background-color: #fdfdfd; }
-        tr:hover { background-color: #f1f1f1; }
-
-        table a {
-            text-decoration: none;
-            color: #007bff;
-            font-weight: 500;
-        }
-        table a:hover {
-            text-decoration: underline;
-        }
-
-        /* --- СТИЛІ ДЛЯ НОВИХ ВКЛАДОК --- */
         .tab-container {
-            width: 80%;
+            width: 100%;
             margin: 20px auto;
         }
-
         .tab {
             overflow: hidden;
-            border-bottom: 2px solid #ccc;
+            border-bottom: 2px solid var(--f1-border);
+            margin-bottom: 20px;
         }
-
         .tab button {
-            background-color: inherit;
+            background-color: transparent;
             float: left;
             border: none;
             outline: none;
             cursor: pointer;
             padding: 14px 20px;
+            font-family: 'Formula1', sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--f1-text-secondary);
             transition: 0.3s;
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #555;
             border-bottom: 4px solid transparent;
         }
-
         .tab button:hover {
-            background-color: #f1f1f1;
+            color: var(--f1-text);
         }
-
         .tab button.active {
-            color: #000;
-            border-bottom: 4px solid #e10600;
+            color: var(--f1-text);
+            border-bottom: 4px solid var(--f1-red);
         }
-
         .tabcontent {
             display: none;
-            padding: 20px 12px;
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
+            animation: fadeEffect 0.5s;
         }
-        /* --- Кінець стилів для вкладок --- */
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        .nav-links {
+            margin-top: 30px;
+            text-align: center;
+        }
     </style>
-</head>
-<body>
-    <h1>F1 Championship Standings ({{ year }} Season)</h1>
+{% endblock %}
+
+{# Основний контент сторінки #}
+{% block content %}
+    <h2>F1 Championship Standings ({{ year }} Season)</h2>
 
     <div class="tab-container">
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'DriverStandings')" id="defaultOpen">Driver Standings</button>
-            <button class="tablinks" onclick="openTab(event, 'ConstructorStandings')">Constructor Standings</button>
+            <button class="tablinks" onclick="openTab(event, 'DriverStandings')" id="defaultOpen">Drivers</button>
+            <button class="tablinks" onclick="openTab(event, 'ConstructorStandings')">Constructors</button>
         </div>
 
         <div id="DriverStandings" class="tabcontent">
-            <table class="data">
+            <table>
                 <thead>
                     <tr>
-                        <th>Position</th>
+                        <th>Pos</th>
                         <th>Name</th>
                         <th>Team</th>
-                        <th>Points</th>
+                        <th>Pts</th>
                         <th>Wins</th>
                     </tr>
                 </thead>
@@ -93,14 +78,10 @@
                     <tr>
                         <td>{{ driver.position }}</td>
                         <td>
-                            <a href="{{ url_for('show_driver_profile', driver_id=driver.driverId) }}">
-                                {{ driver.givenName }} {{ driver.familyName }}
-                            </a>
+                            <span>{{ driver.givenName }} {{ driver.familyName }}</span>
                         </td>
                         <td>
-                            <a href="{{ url_for('show_team_profile', constructor_id=driver.constructorIds[0]) }}">
-                                {{ driver.constructorNames[0] }}
-                            </a>
+                            <span>{{ driver.constructorNames[0] }}</span>
                         </td>
                         <td>{{ driver.points }}</td>
                         <td>{{ driver.wins }}</td>
@@ -111,12 +92,12 @@
         </div>
 
         <div id="ConstructorStandings" class="tabcontent">
-            <table class="data">
+            <table>
                 <thead>
                     <tr>
-                        <th>Position</th>
+                        <th>Pos</th>
                         <th>Name</th>
-                        <th>Points</th>
+                        <th>Pts</th>
                         <th>Wins</th>
                     </tr>
                 </thead>
@@ -125,9 +106,7 @@
                     <tr>
                         <td>{{ team.position }}</td>
                         <td>
-                            <a href="{{ url_for('show_team_profile', constructor_id=team.constructorId) }}">
-                                {{ team.constructorName }}
-                            </a>
+                            <span>{{ team.constructorName }}</span>
                         </td>
                         <td>{{ team.points }}</td>
                         <td>{{ team.wins }}</td>
@@ -137,11 +116,21 @@
             </table>
         </div>
     </div>
-    <br>
-    <a href="{{ url_for('show_season_schedule', year=year) }}">Back to Season Schedule</a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('show_season_schedule', year=year) }}">View {{ year }} Schedule &rarr;</a>
+    </div>
+{% endblock %}
 
 
+{#
+  =====================================================
+   ОНОВЛЕНИЙ JAVASCRIPT: (Об'єднано 2 скрипти)
+  =====================================================
+#}
+{% block scripts %}
     <script>
+        // --- 1. ЛОГІКА ДЛЯ ВКЛАДОК ---
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tabcontent");
@@ -155,9 +144,23 @@
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
         }
-        // Відкриваємо першу вкладку за замовчуванням
-        document.getElementById("defaultOpen").click();
-    </script>
 
-</body>
-</html>
+
+        // --- 2. ЛОГІКА PRELOADER + АКТИВАЦІЯ (ОБ'ЄДНАНО) ---
+        document.addEventListener("DOMContentLoaded", function() {
+            // 2a. АКТИВАЦІЯ ТАБУ: Викликається, коли DOM готовий
+            document.getElementById("defaultOpen").click();
+
+            // 2b. ЛОГІКА PRELOADER (з base.html)
+            const preloader = document.getElementById('preloader-overlay');
+            const mainContent = document.getElementById('main-content');
+
+            if (preloader) {
+                preloader.style.display = 'none'; // Негайно ховаємо вогні
+            }
+            if (mainContent) {
+                mainContent.classList.add('loaded'); // Негайно показуємо контент
+            }
+        });
+    </script>
+{% endblock %}

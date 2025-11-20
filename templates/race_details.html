@@ -1,174 +1,270 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Race Details</title>
+{% extends "base.html" %}
+
+{# Встановлюємо заголовок вкладки браузера #}
+{% block title %}Race Details - F1 Dashboard{% endblock %}
+
+{# Додаємо CSS, специфічний для цієї сторінки #}
+{% block head %}
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #e10600; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        table { border-collapse: collapse; width: 100%; /* Таблиці тепер 100% ширини вкладки */ margin: 0 auto; box-shadow: none; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: 600; }
-        tr:nth-child(even) { background-color: #fdfdfd; }
-        tr:hover { background-color: #f1f1f1; }
-
-        /* --- СТИЛІ ДЛЯ НОВИХ ВКЛАДОК --- */
-
-        /* Контейнер для вкладок */
-        .tab-container {
-            width: 80%;
-            margin: 20px auto;
-        }
-
-        /* Самі кнопки-вкладки */
-        .tab {
-            overflow: hidden;
-            border-bottom: 2px solid #ccc;
-        }
-
+        /* --- СТИЛІ ДЛЯ ВКЛАДОК (без змін) --- */
+        .tab-container { width: 100%; margin: 20px auto; }
+        .tab { overflow: hidden; border-bottom: 2px solid var(--f1-border); margin-bottom: 20px; }
         .tab button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 20px;
-            transition: 0.3s;
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #555;
-            border-bottom: 4px solid transparent; /* "Неактивна" лінія */
+            background-color: transparent; float: left; border: none; outline: none;
+            cursor: pointer; padding: 14px 20px; font-family: 'Formula1', sans-serif;
+            font-size: 1.1rem; font-weight: bold; color: var(--f1-text-secondary);
+            transition: 0.3s; border-bottom: 4px solid transparent;
         }
+        .tab button:hover { color: var(--f1-text); }
+        .tab button.active { color: var(--f1-text); border-bottom: 4px solid var(--f1-red); }
+        .tabcontent { display: none; animation: fadeEffect 0.5s; }
+        @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
 
-        /* Стиль при наведенні */
-        .tab button:hover {
-            background-color: #f1f1f1;
+        .generate-button {
+            display: inline-block; background-color: #007bff; color: white;
+            padding: 12px 20px; text-decoration: none; border-radius: 8px;
+            font-weight: 600; transition: background-color 0.2s;
+            margin-top: 20px; border: none; cursor: pointer; font-size: 1em;
+            font-family: -apple-system, sans-serif;
         }
+        .generate-button:hover { background-color: #0056b3; }
+        .nav-links { margin-top: 30px; text-align: center; }
 
-        /* Стиль для активної вкладки (рожева лінія, як у вас) */
-        .tab button.active {
-            color: #000;
-            border-bottom: 4px solid #e10600; /* Червоний F1 */
-        }
-
-        /* Контент вкладки (таблиця) */
-        .tabcontent {
-            display: none; /* За замовчуванням всі вкладки приховані */
-            padding: 20px 12px;
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-        }
-        /* --- Кінець стилів для вкладок --- */
-
+        /*
+        =====================================================
+         НОВІ СТИЛІ ДЛЯ ФОРМИ (щоб виглядало як на скріншоті)
+        =====================================================
+        */
 
         .form-container {
-            width: 80%;
+            width: 100%;
             margin: 30px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 25px;
+            background-color: var(--f1-card-bg); /* Темний фон картки */
+            border: 1px solid var(--f1-border);
             border-radius: 8px;
         }
-        .form-container select, .form-container button {
-            font-size: 1.1em;
-            padding: 10px;
-            margin: 5px 10px 5px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        .form-container h2 {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 25px; /* Більше відступу */
         }
+
+        /* Контейнер для полів вводу */
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Відступ між рядками */
+            flex-wrap: wrap; /* Для мобільних */
+        }
+        .form-row strong {
+            margin-right: 15px;
+            font-size: 1.1em;
+        }
+
+        /* --- Кастомні Радіокнопки --- */
+        .form-row input[type="radio"] {
+            display: none; /* Ховаємо оригінальну кнопку */
+        }
+        .form-row label {
+            margin-right: 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            position: relative;
+            padding-left: 30px; /* Місце для нашої кнопки */
+        }
+        /* Малюємо "коло" */
+        .form-row label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--f1-text-secondary);
+            border-radius: 50%;
+            background-color: var(--f1-dark-bg);
+        }
+        /* Малюємо "крапку" всередині */
+        .form-row label::after {
+            content: '';
+            position: absolute;
+            left: 5px; /* 2px рамка + 3px відступ */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: var(--f1-red); /* Колір як на скріншоті */
+            border-radius: 50%;
+            opacity: 0; /* Приховано за замовчуванням */
+            transition: opacity 0.2s;
+        }
+        /* Показуємо крапку, коли радіокнопка обрана */
+        .form-row input[type="radio"]:checked + label::after {
+            opacity: 1;
+        }
+        .form-row input[type="radio"]:checked + label::before {
+            border-color: var(--f1-red);
+        }
+
+
+        /* --- Кастомні Випадаючі Списки (Select) --- */
+
+        /* Обгортка для select, щоб додати стрілку */
+        .select-wrapper {
+            position: relative;
+            margin-right: 20px;
+        }
+
+        .form-container select {
+            font-size: 1.1em;
+            padding: 10px 35px 10px 15px; /* Місце для стрілки */
+            border-radius: 5px;
+            border: 1px solid var(--f1-border);
+            background-color: #333; /* Темніший фон */
+            color: var(--f1-text);
+
+            /* Прибираємо стандартний вигляд */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            cursor: pointer;
+        }
+
+        /* Малюємо нашу стрілку */
+        .select-wrapper::after {
+            content: '▾'; /* Стрілка вниз */
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            color: var(--f1-text-secondary);
+            pointer-events: none; /* Щоб клік проходив "крізь" стрілку */
+        }
+
+        /* --- Кнопка "Compare" --- */
         .form-container button {
-            background-color: #e10600;
+            background-color: var(--f1-red);
             color: white;
             cursor: pointer;
             border: none;
+            font-family: 'Formula1', sans-serif;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 10px 20px;
+            margin: 0;
+            border-radius: 5px;
         }
         .form-container button:hover {
             background-color: #b00500;
         }
     </style>
-</head>
-<body>
-    <h1>{{ session_name }}</h1>
+{% endblock %}
+
+{# Основний контент сторінки #}
+{% block content %}
+    <h2>{{ session_name }}</h2>
 
     <div class="tab-container">
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Qualifying')" id="defaultOpen">Qualifying Results</button>
             <button class="tablinks" onclick="openTab(event, 'Race')">Race Results</button>
+            <button class="tablinks" onclick="openTab(event, 'Pace')">Pace Analysis</button>
+            <button class="tablinks" onclick="openTab(event, 'Strategy')">Strategy</button>
         </div>
 
         <div id="Qualifying" class="tabcontent">
             {{ qual_results_table | safe }}
+            <a href="{{ url_for('show_qualifying_plot', year=year, race_name=race_name) }}"
+               class="generate-button"
+               target="_blank">
+               Generate Qualifying Overview Plot
+            </a>
         </div>
-
         <div id="Race" class="tabcontent">
             {{ race_results_table | safe }}
         </div>
+        <div id="Pace" class="tabcontent">
+            <p style="color: var(--f1-text-secondary);">Generate a plot to compare the race pace of all teams.</p>
+            <a href="{{ url_for('show_pace_plot', year=year, race_name=race_name) }}"
+               class="generate-button"
+               target="_blank">
+               Generate Team Pace Plot
+            </a>
+        </div>
+        <div id="Strategy" class="tabcontent">
+            <p style="color: var(--f1-text-secondary);">Generate a plot showing the tyre strategy for all drivers.</p>
+            <a href="{{ url_for('show_strategy_plot', year=year, race_name=race_name) }}"
+               class="generate-button"
+               target="_blank">
+               Generate Strategy Plot
+            </a>
+        </div>
     </div>
+
     <div class="form-container">
         <h2>Compare Telemetry</h2>
+        <form action="{{ url_for('show_race_plot', year=year, race_name=race_name) }}" method="GET" target="_blank">
 
-        <form action="{{ url_for('show_race_plot', year=year, race_name=race_name) }}" method="GET">
+            <div class="form-row">
+                <strong>Session:</strong>
+                <input type="radio" id="session_q" name="session_type" value="Q" checked>
+                <label for="session_q">Qualifying</label>
 
-            <label><strong>Session:</strong></label>
-            <input type="radio" id="session_q" name="session_type" value="Q" checked>
-            <label for="session_q">Qualifying</label>
-            <input type="radio" id="session_r" name="session_type" value="R">
-            <label for="session_r">Race</label>
-            <br><br>
+                <input type="radio" id="session_r" name="session_type" value="R">
+                <label for="session_r">Race</label>
+            </div>
 
-            <label for="d1"><strong>Driver 1:</strong></label>
-            <select id="d1" name="d1">
-                {% for driver in drivers_list %}
-                    <option value="{{ driver }}">{{ driver }}</option>
-                {% endfor %}
-            </select>
+            <div class="form-row">
+                <strong>Driver 1:</strong>
+                <div class="select-wrapper">
+                    <select id="d1" name="d1">
+                        {% for driver in drivers_list %}
+                            <option value="{{ driver }}">{{ driver }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <label for="d2"><strong>Driver 2:</strong></label>
-            <select id="d2" name="d2">
-                {% for driver in drivers_list %}
-                    <option value="{{ driver }}" {% if loop.index == 2 %}selected{% endif %}>
-                        {{ driver }}
-                    </option>
-                {% endfor %}
-            </select>
+                <strong>Driver 2:</strong>
+                <div class="select-wrapper">
+                    <select id="d2" name="d2">
+                        {% for driver in drivers_list %}
+                            <option value="{{ driver }}" {% if loop.index == 2 %}selected{% endif %}>
+                                {{ driver }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <button type="submit">Compare</button>
+                <button type="submit">Compare</button>
+            </div>
         </form>
     </div>
 
-    <br>
-    <a href="{{ url_for('show_season_schedule', year=year) }}">Back to Season Schedule</a>
+    <div class="nav-links">
+        <a href="{{ url_for('show_season_schedule', year=year) }}">&larr; Back to Season Schedule</a>
+    </div>
+{% endblock %}
 
-
+{# JavaScript для вкладок (вставляється в кінець <body>) #}
+{% block scripts %}
     <script>
         function openTab(evt, tabName) {
-            // Оголошуємо змінні
             var i, tabcontent, tablinks;
-
-            // Отримуємо всі елементи з класом "tabcontent" і ховаємо їх
             tabcontent = document.getElementsByClassName("tabcontent");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
-
-            // Отримуємо всі елементи з класом "tablinks" і видаляємо клас "active"
             tablinks = document.getElementsByClassName("tablinks");
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
-
-            // Показуємо поточну вкладку і додаємо клас "active" до кнопки
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
         }
-
-        // Імітуємо клік на першій вкладці, щоб вона була відкрита при завантаженні
         document.getElementById("defaultOpen").click();
     </script>
-
-</body>
-</html>
+{% endblock %}

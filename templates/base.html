@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}F1 Dashboard{% endblock %}</title>
+    <style>
+        /* --- 1. ЗАВАНТАЖЕННЯ ШРИФТІВ --- */
+        @font-face {
+            font-family: 'Formula1';
+            src: url("{{ url_for('static', filename='fonts/Formula1-Regular_web_0.ttf') }}") format('truetype');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: 'Formula1';
+            src: url("{{ url_for('static', filename='fonts/Formula1-Bold_web_0.ttf') }}") format('truetype');
+            font-weight: bold;
+        }
+        @font-face {
+            font-family: 'Formula1';
+            src: url("{{ url_for('static', filename='fonts/Formula1-Wide_web_0.ttf') }}") format('truetype');
+            font-weight: 900;
+        }
+
+        /* --- 2. ГЛОБАЛЬНІ СТИЛІ (Ваша Темна тема) --- */
+        :root {
+            --f1-red: #e10600;
+            --f1-dark-bg: #000000; /* Чорний фон */
+            --f1-card-bg: #000000; /* Чорні картки */
+            --f1-text: #ffffff;
+            --f1-text-secondary: #aaaaaa;
+            --f1-border: #333333;
+        }
+
+        body {
+            font-family: 'Formula1', -apple-system, sans-serif;
+            background-color: var(--f1-dark-bg);
+            color: var(--f1-text);
+            margin: 0;
+            padding: 0;
+        }
+
+        /*
+        =====================================================
+         НОВІ СТИЛІ ДЛЯ АНІМАЦІЇ ЗАВАНТАЖЕННЯ (З КАРТИНКАМИ)
+        =====================================================
+        */
+        #preloader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--f1-dark-bg); /* Використовуємо ваш чорний фон */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        .start-lights {
+            display: flex;
+            gap: 20px;
+        }
+
+        .light {
+            width: 100px; /* Ви можете налаштувати розмір */
+            height: auto;
+            /* "Вимкнений" стан: тускле зображення */
+            opacity: 0.2;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* "Увімкнений" стан: повна яскравість */
+        .light.on {
+            opacity: 1;
+        }
+        /* --- Кінець нових стилів --- */
+
+
+        /* --- 3. СТИЛІ НАВІГАЦІЇ / ШАПКИ --- */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .header img {
+            max-width: 250px;
+            height: auto;
+        }
+        .header h1 {
+            font-family: 'Formula1', sans-serif;
+            font-weight: 900;
+            font-size: 3.5rem;
+            color: var(--f1-text);
+            margin: 10px 0;
+        }
+
+        /* --- 4. СТИЛІ КОНТЕНТУ (за замовчуванням) --- */
+        .main-container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* НОВА ЗМІНА:
+          Приховуємо основний контент, поки вогні горять
+        */
+        #main-content {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #main-content.loaded {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        h2 {
+            font-family: 'Formula1', sans-serif;
+            font-weight: bold;
+            font-size: 2rem;
+            color: var(--f1-text);
+            border-bottom: 2px solid var(--f1-border);
+            padding-bottom: 10px;
+        }
+
+        /* --- 5. СТИЛІ ТАБЛИЦЬ (Ваш Чорний стиль) --- */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+            box-shadow: none;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #000000; /* Чорна рамка */
+        }
+        th, td {
+            border: 1px solid #000000; /* Чорні рамки */
+            padding: 14px;
+            text-align: left;
+        }
+        th {
+            background-color: #000000; /* Чорний заголовок */
+            font-weight: bold;
+        }
+        td {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        tr {
+            background-color: #000000; /* Чорні рядки */
+            transition: background-color 0.2s;
+        }
+        tr:hover {
+            background-color: #000000; /* Без ефекту */
+        }
+
+        /* --- 6. СТИЛІ ПОСИЛАНЬ ТА КНОПОК --- */
+        a {
+            color: var(--f1-red);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        a:hover {
+            color: #ff4033;
+        }
+
+        .button-red {
+            display: inline-block;
+            background-color: var(--f1-red);
+            color: var(--f1-text);
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: 'Formula1', sans-serif;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .button-red:hover {
+            background-color: #b00500;
+            color: var(--f1-text);
+        }
+
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <div id="preloader-overlay">
+        <div class="start-lights">
+            <img src="{{ url_for('static', filename='red_v3.png') }}" class="light" alt="Red Light"/>
+            <img src="{{ url_for('static', filename='red_v3.png') }}" class="light" alt="Red Light"/>
+            <img src="{{ url_for('static', filename='red_v3.png') }}" class="light" alt="Red Light"/>
+            <img src="{{ url_for('static', filename='red_v3.png') }}" class="light" alt="Red Light"/>
+            <img src="{{ url_for('static', filename='red_v3.png') }}" class="light" alt="Red Light"/>
+            <!--<img src="{{ url_for('static', filename='gree_v1.png') }}" class="light" alt="Green Light"/> -->
+        </div>
+    </div>
+    <div id="main-content">
+
+        <header class="header">
+            <img src="{{ url_for('static', filename='f1_logo.svg') }}" alt="Formula 1 Logo">
+            <h1>Data dashboard</h1>
+        </header>
+
+        <main class="main-container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer>
+        </footer>
+
+    </div>
+    {% block scripts %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Знаходимо всі наші елементи
+            const lights = document.querySelectorAll('#preloader-overlay .light');
+            const preloader = document.getElementById('preloader-overlay');
+            const mainContent = document.getElementById('main-content');
+
+            // Функція для показу контенту
+            function showContent() {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+                mainContent.classList.add('loaded');
+                setTimeout(() => {
+                    preloader.style.display = 'none';
+                }, 500);
+            }
+
+            //
+            // --- ОСЬ ТУТ ГОЛОВНА ЗМІНА ---
+            //
+            // Перевіряємо, чи ми на Головній сторінці (шлях '/' )
+            if (window.location.pathname === '/') {
+                // --- МИ НА ГОЛОВНІЙ: Запускаємо анімацію ---
+                setTimeout(() => { if (lights[0]) lights[0].classList.add('on'); }, 500);
+                setTimeout(() => { if (lights[1]) lights[1].classList.add('on'); }, 1500);
+                setTimeout(() => { if (lights[2]) lights[2].classList.add('on'); }, 2500);
+                setTimeout(() => { if (lights[3]) lights[3].classList.add('on'); }, 3500);
+                setTimeout(() => { if (lights[4]) lights[4].classList.add('on'); }, 4500);
+
+                // --- "СТАРТ!" ---
+                setTimeout(() => {
+                    lights.forEach(light => light.classList.remove('on'));
+                    showContent();
+                }, 5500);
+
+            } else {
+                // --- МИ НЕ НА ГОЛОВНІЙ: Пропускаємо анімацію ---
+                preloader.style.display = 'none'; // Негайно ховаємо вогні
+                mainContent.classList.add('loaded'); // Негайно показуємо контент
+            }
+        });
+    </script>
+{% endblock %}
+</body>
+</html>
